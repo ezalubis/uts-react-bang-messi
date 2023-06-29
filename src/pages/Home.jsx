@@ -94,7 +94,6 @@ export default function Home() {
   const [page, setPage] = useState(1);
   const [editedProduct, setEditedProduct] = useState();
   const [add, setAdd] = useState();
-  // const [price, setPrice] = useState();
   const refId = useRef(products.length+1);
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -117,8 +116,8 @@ export default function Home() {
   return (
     <>
     <div className="products">
-      <button onClick={() => setAdd({ id: refId })}>Tambah</button>
       <header>
+      <button onClick={() => setAdd({ id: refId })}>Tambah</button>
         <label>
           Cari:
           <input
@@ -170,6 +169,7 @@ export default function Home() {
           ? filteredSortedProducts
               .filter((_product, i) => i >= 4 * page - 4 && i < 4 * page)
               .map((product) => (
+                <>
                 <Product
                   key={product.id}
                   {...product}
@@ -182,6 +182,23 @@ export default function Home() {
                   setIsCartOpen={setIsCartOpen}
                   isCartOpen={isCartOpen}
                 />
+                <Button
+                  variant="tonal"
+                  onClick={()=>{
+                    if(cart.find((p)=>p.id===product.id)){
+                      setCart(
+                        cart.map((p)=>
+                          p.id===product.id ? {...p,count:p.count+1,}:p
+                        )
+                      );
+                    }else{
+                      setCart([...cart,{product,count:1}]);
+                    }
+                  }}
+                >
+                  keranjang
+                </Button>
+                </>
               ))
           : "Tidak ada produk ditemukan."}
       </main>
@@ -268,7 +285,7 @@ export default function Home() {
             refId.current++
           }}
         >
-          <h1>Tambah Planet</h1>
+          <h1>Tambah Produk</h1>
           <label>
             ID
             <input type="text" value={refId.current} readOnly />
@@ -319,7 +336,68 @@ export default function Home() {
         </form>
       )}
     </div>
-   
+    {isCartOpen && (
+        <div className="card dialog">
+          <button onClick={() => setIsCartOpen(false)}>
+            <MdClose />
+          </button>
+          <h1>Keranjang</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nama</th>
+                <th>Jumlah</th>
+                <th>Tindakan</th>
+              </tr>
+            </thead>
+            <tbody>
+              {cart.map((pc) => (
+                <tr key={pc.id}>
+                  <td>{pc.id}</td>
+                  <td>{pc.name}</td>
+                  <td>{pc.count.toLocaleString()}</td>
+                  <td>
+                    <button
+                      onClick={(pc) => {
+                        if (pc.count > 1) {
+                          setCart(
+                            cart.map((p) =>
+                              p.id === pc.id
+                                ? { ...p, count: p.count - 1 }
+                                : p
+                            )
+                          );
+                        } else {
+                          setCart(cart.filter((p) => p.id !== pc.id));
+                        }
+                      }}
+                      title="Kurangi"
+                    >
+                      <AiOutlineMinusCircle />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setCart(
+                          cart.map((p) =>
+                            p.id === pc.id
+                              ? { ...p, count: p.count + 1 }
+                              : p
+                          )
+                        );
+                      }}
+                      title="Tambah"
+                    >
+                      <AiOutlinePlusCircle />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
   </>
   );
 }
